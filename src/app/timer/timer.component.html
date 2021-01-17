@@ -1,0 +1,5 @@
+<button (click)="startButtonClicked$.next()">Start</button>
+<button (click)="pauseButtonClicked$.next()">Pause</button>
+<button (click)="resetButtonClicked$.next()">Reset</button>
+
+{{timer$ | async | json}}
