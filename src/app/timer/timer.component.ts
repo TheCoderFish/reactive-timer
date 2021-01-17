@@ -1,10 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
+import { interval, merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
 import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
 import { OutputTimeValue, TimerState, TimeValue } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
 const SECOND_TO_MILLISECONDS = 1000;
+
+export enum Modes{
+  Pomodo
+}
 
 @Component({
   selector: 'app-timer',
@@ -41,11 +45,12 @@ export class TimerComponent implements OnInit {
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
       // create the actual timer by switching from base
       switchMap((state: TimerState) =>
-        state.isTicking ? timer(0, 1000).pipe(
+        state.isTicking ? interval(1000).pipe(
           map(timer => {
+            
             const { minutes, seconds } = state.value;
             const totalSeconds = minutes * 60 + seconds;
-            const currentValue = totalSeconds - timer;
+            const currentValue = totalSeconds - 1;
 
             const _minutes = Math.floor(currentValue / SECONDS_IN_A_MINUTE);
             const _seconds = (currentValue % SECONDS_IN_A_MINUTE);
