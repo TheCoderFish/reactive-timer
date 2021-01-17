@@ -1,7 +1,7 @@
 export interface TimerState {
     value: TimeValue;
-    isTicking: boolean;
-    mode: Modes
+    isTicking?: boolean;
+    mode?: Modes
 }
 
 export enum Modes {

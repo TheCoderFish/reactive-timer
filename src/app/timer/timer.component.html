@@ -3,3 +3,8 @@
 <button (click)="resetButtonClicked$.next()">Reset</button>
 
 {{timer$ | async | json}}
+
+
+<button (click)="changeTimerMode$.next(Modes.Pomodoro)">Pomodoro</button>
+<button (click)="changeTimerMode$.next(Modes.ShortBreak)">Short</button>
+<button (click)="changeTimerMode$.next(Modes.LongBreak)">Long</button>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { interval, merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
 import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
-import { OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
+import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
 const SECOND_TO_MILLISECONDS = 1000;
@@ -19,6 +19,9 @@ export class TimerComponent implements OnInit {
   startButtonClicked$ = new Subject();
   pauseButtonClicked$ = new Subject();
   resetButtonClicked$ = new Subject();
+  changeTimerMode$ = new Subject<Modes>();
+
+  Modes = Modes;
 
 
   timer$: Observable<OutputTimeValue>;
@@ -35,10 +38,29 @@ export class TimerComponent implements OnInit {
       this.startButtonClicked$.pipe(mapTo({ isTicking: true })),
       this.pauseButtonClicked$.pipe(mapTo({ isTicking: false })),
       this.resetButtonClicked$.pipe(mapTo({ value: { minutes: 0, seconds: 0 } })),
+      this.changeTimerMode$.pipe(map<Modes, TimerState>((mode: Modes) => {
+        let value: TimeValue;
+        switch (mode) {
+          case Modes.Pomodoro:
+            value = { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds }
+            break;
+          case Modes.ShortBreak:
+            value = { minutes: TimeValues.ShortBreak.minutes, seconds: TimeValues.ShortBreak.seconds }
+            break;
+          case Modes.LongBreak:
+            value = { minutes: TimeValues.LongBreak.minutes, seconds: TimeValues.LongBreak.seconds }
+            break;
+          default:
+            value = { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds }
+            break;
+        }
+        return ({ value });
+      })),
     )
 
     //create the timer with the initial state
     this.timer$ = this.events$.pipe(
+      tap(console.log),
       startWith({ isTicking: false, value: { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds } }),
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
       // create the actual timer by switching from base
@@ -58,7 +80,7 @@ export class TimerComponent implements OnInit {
           }),
           tap((value: TimeValue) => state.value = value),
           map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
-        ) : NEVER)
+        ) : of({ minutes: '00', seconds: '00' }))
     )
   }
 
