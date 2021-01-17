@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
-import { map, mapTo, scan, startWith, switchMap } from 'rxjs/operators';
-import { TimerState, TimeValue } from '../models/timer-state';
+import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
+import { OutputTimeValue, TimerState, TimeValue } from '../models/timer-state';
+
+const SECONDS_IN_A_MINUTE = 60;
+const SECOND_TO_MILLISECONDS = 1000;
 
 @Component({
   selector: 'app-timer',
@@ -16,7 +19,7 @@ export class TimerComponent implements OnInit {
   resetButtonClicked$ = new Subject();
 
 
-  timer$: Observable<TimeValue>;
+  timer$: Observable<OutputTimeValue>;
 
   //events
   events$: Observable<any>;
@@ -38,14 +41,26 @@ export class TimerComponent implements OnInit {
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
       // create the actual timer by switching from base
       switchMap((state: TimerState) =>
-        state.isTicking ? timer(0, 1000).pipe(map(timer => {
-          const { minutes, seconds } = state.value;
-          const totalSeconds = minutes * 60 + seconds;
-          const currentValue = totalSeconds - timer;
-          
-          return ({ minutes: currentValue, seconds: 0 })
-        })) : NEVER)
+        state.isTicking ? timer(0, 1000).pipe(
+          map(timer => {
+            const { minutes, seconds } = state.value;
+            const totalSeconds = minutes * 60 + seconds;
+            const currentValue = totalSeconds - timer;
+
+            const _minutes = Math.floor(currentValue / SECONDS_IN_A_MINUTE);
+            const _seconds = (currentValue % SECONDS_IN_A_MINUTE);
+
+            return ({ minutes: _minutes, seconds: _seconds })
+            /* return ({ minutes: this.padNumber(_minutes), seconds: this.padNumber(_seconds) }) */
+          }),
+          tap((value: TimeValue) => state.value = value),
+          map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
+        ) : NEVER)
     )
+  }
+
+  private padNumber(num: number) {
+    return String(num).padStart(2, '0');
   }
 
 }
