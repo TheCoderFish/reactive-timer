@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { merge, Observable, Subject } from 'rxjs';
-import { mapTo, scan, startWith } from 'rxjs/operators';
+import { merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
+import { map, mapTo, scan, startWith, switchMap } from 'rxjs/operators';
 import { TimerState, TimeValue } from '../models/timer-state';
 
 @Component({
@@ -35,7 +35,16 @@ export class TimerComponent implements OnInit {
     //create the timer with the initial state
     this.timer$ = this.events$.pipe(
       startWith({ isTicking: false, value: { minutes: 10, seconds: 0 } }),
-      scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {})
+      scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
+      // create the actual timer by switching from base
+      switchMap((state: TimerState) =>
+        state.isTicking ? timer(0, 1000).pipe(map(timer => {
+          const { minutes, seconds } = state.value;
+          const totalSeconds = minutes * 60 + seconds;
+          const currentValue = totalSeconds - timer;
+          
+          return ({ minutes: currentValue, seconds: 0 })
+        })) : NEVER)
     )
   }
 
