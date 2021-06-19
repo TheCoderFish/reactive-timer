@@ -10,6 +10,22 @@
   <p>00 00</p>
 </ng-template>
 
-<button (click)="changeTimerMode$.next(Modes.Pomodoro)">Pomodoro</button>
-<button (click)="changeTimerMode$.next(Modes.ShortBreak)">Short</button>
-<button (click)="changeTimerMode$.next(Modes.LongBreak)">Long</button>
+<button (click)="setMode(Modes.Pomodoro)">Pomodoro</button>
+<button (click)="setMode(Modes.ShortBreak)">Short</button>
+<button (click)="setMode(Modes.LongBreak)">Long</button>
+
+<!-- Debugging -->
+<h1>timer</h1>
+<p>
+  {{ timer$ | async | json }}
+</p>
+
+<h1>Display</h1>
+<p>
+  {{ displayTimer$ | async | json }}
+</p>
+
+<h1>Latest State</h1>
+<p>
+  {{ timerState$ | async | json }}
+</p>
