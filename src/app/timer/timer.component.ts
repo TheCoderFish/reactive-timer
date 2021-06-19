@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { interval, merge, NEVER, Observable, of, Subject, timer } from 'rxjs';
+import { interval, merge, NEVER, Observable, Subject } from 'rxjs';
 import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
 import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
 const SECOND_TO_MILLISECONDS = 1000;
-
-
 
 @Component({
   selector: 'app-timer',
@@ -23,12 +21,10 @@ export class TimerComponent implements OnInit {
 
   Modes = Modes;
 
-
   timer$: Observable<OutputTimeValue>;
 
-  //events
+  // events
   events$: Observable<any>;
-
 
   constructor() { }
 
@@ -55,12 +51,11 @@ export class TimerComponent implements OnInit {
             break;
         }
         return ({ value });
-      })),
+      }))
     )
 
-    //create the timer with the initial state
+    // create the timer with the initial state
     this.timer$ = this.events$.pipe(
-      tap(console.log),
       startWith({ isTicking: false, value: { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds } }),
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
       // create the actual timer by switching from base
@@ -69,6 +64,11 @@ export class TimerComponent implements OnInit {
           map(tick => {
 
             const { minutes, seconds } = state.value;
+
+            // Find a better way to reset
+            if (minutes === 0 && seconds === 0) {
+              return ({ minutes: 0, seconds: 0 })
+            }
             const totalSeconds = minutes * 60 + seconds;
             const currentValue = totalSeconds - 1;
 
@@ -76,11 +76,10 @@ export class TimerComponent implements OnInit {
             const _seconds = (currentValue % SECONDS_IN_A_MINUTE);
 
             return ({ minutes: _minutes, seconds: _seconds })
-            /* return ({ minutes: this.padNumber(_minutes), seconds: this.padNumber(_seconds) }) */
           }),
           tap((value: TimeValue) => state.value = value),
           map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
-        ) : of({ minutes: '00', seconds: '00' }))
+        ) : NEVER)
     )
   }
 
