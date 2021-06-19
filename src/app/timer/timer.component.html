@@ -2,14 +2,13 @@
 <button (click)="pauseButtonClicked$.next()">Pause</button>
 <button (click)="resetButtonClicked$.next()">Reset</button>
 
-<p *ngIf="timer$ | async as timer;else notInitialized">
-    {{timer.minutes}}
-    {{timer.seconds}}
+<p *ngIf="displayTimer$ | async as timer; else notInitialized">
+  {{ timer.minutes }}
+  {{ timer.seconds }}
 </p>
 <ng-template #notInitialized>
-    <p>00 00</p>
+  <p>00 00</p>
 </ng-template>
-
 
 <button (click)="changeTimerMode$.next(Modes.Pomodoro)">Pomodoro</button>
 <button (click)="changeTimerMode$.next(Modes.ShortBreak)">Short</button>

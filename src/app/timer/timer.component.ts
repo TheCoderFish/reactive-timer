@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { interval, merge, NEVER, Observable, Subject } from 'rxjs';
-import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
+import { map, mapTo, pluck, scan, startWith, switchMap, tap } from 'rxjs/operators';
 import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
@@ -21,7 +21,8 @@ export class TimerComponent implements OnInit {
 
   Modes = Modes;
 
-  timer$: Observable<OutputTimeValue>;
+  timer$: Observable<TimerState>;
+  displayTimer$: Observable<OutputTimeValue>;
 
   // events
   events$: Observable<any>;
@@ -58,33 +59,42 @@ export class TimerComponent implements OnInit {
     this.timer$ = this.events$.pipe(
       startWith({ isTicking: false, value: { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds } }),
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
+      /* tap(console.log), */
       // create the actual timer by switching from base
       switchMap((state: TimerState) =>
         state.isTicking ? interval(1000).pipe(
-          map(tick => {
+          map(tick => this.updateTimerStateOnTick(state)),
+          tap((_state: TimerState) => state.value = _state.value),
+        ) : NEVER),
+    )
 
-            const { minutes, seconds } = state.value;
-
-            // Find a better way to reset
-            if (minutes === 0 && seconds === 0) {
-              return ({ minutes: 0, seconds: 0 })
-            }
-            const totalSeconds = minutes * 60 + seconds;
-            const currentValue = totalSeconds - 1;
-
-            const _minutes = Math.floor(currentValue / SECONDS_IN_A_MINUTE);
-            const _seconds = (currentValue % SECONDS_IN_A_MINUTE);
-
-            return ({ minutes: _minutes, seconds: _seconds })
-          }),
-          tap((value: TimeValue) => state.value = value),
-          map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
-        ) : NEVER)
+    this.displayTimer$ = this.timer$.pipe(
+      startWith({ isTicking: false, value: { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds } }),
+      pluck('value'),
+      map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
     )
   }
 
   private padNumber(num: number) {
     return String(num).padStart(2, '0');
+  }
+
+  private updateTimerStateOnTick(currentState: TimerState): TimerState {
+    const { value: { minutes, seconds } } = currentState;
+
+    // Find a better way to reset
+    if (minutes === 0 && seconds === 0) {
+      const _value = ({ minutes: 0, seconds: 0 });
+      return ({ ...currentState, value: _value })
+    }
+    const totalSeconds = minutes * 60 + seconds;
+    const currentValue = totalSeconds - 1;
+
+    const _minutes = Math.floor(currentValue / SECONDS_IN_A_MINUTE);
+    const _seconds = (currentValue % SECONDS_IN_A_MINUTE);
+
+    const value = ({ minutes: _minutes, seconds: _seconds });
+    return ({ ...currentState, value })
   }
 
 }
