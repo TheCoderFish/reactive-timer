@@ -1,38 +1,39 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { BehaviorSubject, interval, merge, NEVER, Observable, Subject } from 'rxjs';
-import { map, mapTo, pluck, scan, shareReplay, skip, startWith, switchMap, tap } from 'rxjs/operators';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, interval, merge, NEVER, Observable, ReplaySubject, Subject } from 'rxjs';
+import { map, mapTo, pluck, scan, skip, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { Purpose } from '../button/button.component';
 import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
-const SECOND_TO_MILLISECONDS = 1000;
-
 @Component({
   selector: 'app-timer',
   templateUrl: './timer.component.html',
   styleUrls: ['./timer.component.scss']
 })
-export class TimerComponent implements OnInit {
+export class TimerComponent implements OnInit, OnDestroy {
 
-  Purpose = Purpose;
 
-  // create observable from the button click
+
+  // Commands
   startButtonClicked$ = new Subject();
   pauseButtonClicked$ = new Subject();
   resetButtonClicked$ = new Subject();
+
+  // events
+  events$: Observable<any>;
 
   currentMode = new BehaviorSubject(Modes.Pomodoro);
   currentMode$ = this.currentMode.asObservable().pipe(
     map<Modes, TimerState>((mode: Modes) => this.getTimerForMode(mode)))
 
   Modes = Modes;
+  Purpose = Purpose;
 
   timer$: Observable<TimerState>;
   displayTimer$: Observable<OutputTimeValue>;
   timerState$ = new BehaviorSubject(null);
 
-  // events
-  events$: Observable<any>;
+  private destroyed$ = new ReplaySubject();
 
   constructor(
     private cdr: ChangeDetectorRef
@@ -40,24 +41,27 @@ export class TimerComponent implements OnInit {
 
   ngOnInit(): void {
 
+    // Map the commands to the delta needed in the store
     this.events$ = merge(
       this.startButtonClicked$.pipe(mapTo({ isTicking: true })),
+
       this.pauseButtonClicked$.pipe(mapTo({ isTicking: false })),
+
       this.resetButtonClicked$.pipe(map(() => {
         const value = this.getTimerForMode(this.currentMode.value)
         return ({ ...value, isTicking: false })
       })),
+
       this.currentMode$.pipe(
         skip(1),
         tap(() => this.startButtonClicked$.next())
       )
     )
 
-    // create the timer with the initial state
+    // Reducer
     this.timer$ = this.events$.pipe(
       startWith({ isTicking: false, value: { minutes: TimeValues.Pomodoro.minutes, seconds: TimeValues.Pomodoro.seconds } }),
       scan((state: TimerState, curr): TimerState => ({ ...state, ...curr }), {}),
-      // create the actual timer by switching from base
       tap(state => this.setTimerState(state)),
       switchMap((state: TimerState) =>
         state.isTicking ? interval(1000).pipe(
@@ -69,16 +73,20 @@ export class TimerComponent implements OnInit {
         ) : NEVER)
     )
 
+    // Selector
     this.displayTimer$ = this.timerState$.pipe(
       pluck('value'),
       map(((value: TimeValue) => ({ minutes: this.padNumber(value.minutes), seconds: this.padNumber(value.seconds) })))
     )
 
-    this.timer$.subscribe();
+    // Init
+    this.timer$.pipe(
+      takeUntil(this.destroyed$)
+    ).subscribe();
   }
 
-  private padNumber(num: number) {
-    return String(num).padStart(2, '0');
+  private padNumber(number: number) {
+    return String(number).padStart(2, '0');
   }
 
   private updateTimerStateOnTick(currentState: TimerState): TimerState {
@@ -87,7 +95,7 @@ export class TimerComponent implements OnInit {
     // Find a better way to reset
     if (minutes === 0 && seconds === 0) {
       const _value = ({ minutes: 0, seconds: 0 });
-      return ({ ...currentState, value: _value })
+      return ({ ...currentState, value: _value, isTicking: false })
     }
     const totalSeconds = minutes * 60 + seconds;
     const currentValue = totalSeconds - 1;
@@ -125,6 +133,11 @@ export class TimerComponent implements OnInit {
 
   setMode(mode: Modes) {
     this.currentMode.next(mode);
+  }
+
+  ngOnDestroy() {
+    this.destroyed$.next(true);
+    this.destroyed$.complete();
   }
 
 }

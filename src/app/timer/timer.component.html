@@ -1,26 +1,17 @@
 <div class="timer">
   <div class="modes">
-    <app-mode-button>Work</app-mode-button>
+    <app-mode-button (click)="setMode(Modes.Pomodoro)">Work</app-mode-button>
     <app-mode-button (click)="setMode(Modes.ShortBreak)"
       >Take a short walk</app-mode-button
     >
     <app-mode-button (click)="setMode(Modes.LongBreak)"
       >Have a snack</app-mode-button
     >
-
-    <!-- <app-button (click)="setMode(Modes.Pomodoro)">Work</app-button>
-    <app-button (click)="setMode(Modes.ShortBreak)"
-      >Take a short walk</app-button
-    >
-    <app-button (click)="setMode(Modes.LongBreak)">Have a snack</app-button> -->
   </div>
 
-  <ng-container *ngIf="displayTimer$ | async as timer; else notInitialized">
+  <ng-container *ngIf="displayTimer$ | async as timer">
     <p>{{ timer.minutes }} : {{ timer.seconds }}</p>
   </ng-container>
-  <ng-template #notInitialized>
-    <p>00 00</p>
-  </ng-template>
 </div>
 
 <div class="timer-controls">
@@ -34,19 +25,3 @@
     >Reset</app-button
   >
 </div>
-<!-- Debugging -->
-<!-- <h1>timer</h1>
-<p>
-  {{ timer$ | async | json }}
-</p>
-
-<h1>Display</h1>
-<p>
-  {{ displayTimer$ | async | json }}
-</p>
-
-<h1>Latest State</h1>
-<p>
-  {{ timerState$ | async | json }}
-</p>
- -->
