@@ -4,11 +4,13 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TimerComponent } from './timer/timer.component';
+import { HeaderComponent } from './header/header.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TimerComponent
+    TimerComponent,
+    HeaderComponent
   ],
   imports: [
     BrowserModule,
