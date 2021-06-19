@@ -1,4 +1,20 @@
 <div class="timer">
+  <div class="modes">
+    <app-mode-button>Work</app-mode-button>
+    <app-mode-button (click)="setMode(Modes.ShortBreak)"
+      >Take a short walk</app-mode-button
+    >
+    <app-mode-button (click)="setMode(Modes.LongBreak)"
+      >Have a snack</app-mode-button
+    >
+
+    <!-- <app-button (click)="setMode(Modes.Pomodoro)">Work</app-button>
+    <app-button (click)="setMode(Modes.ShortBreak)"
+      >Take a short walk</app-button
+    >
+    <app-button (click)="setMode(Modes.LongBreak)">Have a snack</app-button> -->
+  </div>
+
   <ng-container *ngIf="displayTimer$ | async as timer; else notInitialized">
     <p>{{ timer.minutes }} : {{ timer.seconds }}</p>
   </ng-container>
@@ -18,10 +34,6 @@
     >Reset</app-button
   >
 </div>
-<!-- <button (click)="setMode(Modes.Pomodoro)">Pomodoro</button>
-<button (click)="setMode(Modes.ShortBreak)">Short</button>
-<button (click)="setMode(Modes.LongBreak)">Long</button> -->
-
 <!-- Debugging -->
 <!-- <h1>timer</h1>
 <p>

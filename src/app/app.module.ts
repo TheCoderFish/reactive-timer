@@ -6,13 +6,15 @@ import { AppComponent } from './app.component';
 import { TimerComponent } from './timer/timer.component';
 import { HeaderComponent } from './header/header.component';
 import { ButtonComponent } from './button/button.component';
+import { ModeButtonComponent } from './mode-button/mode-button.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TimerComponent,
     HeaderComponent,
-    ButtonComponent
+    ButtonComponent,
+    ModeButtonComponent
   ],
   imports: [
     BrowserModule,

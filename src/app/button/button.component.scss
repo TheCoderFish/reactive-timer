@@ -71,6 +71,9 @@
 .reset {
     @include btn-border-drawing(rgb(114, 110, 110), rgb(248, 18, 18), 4px, bottom, right);
 }
+.default {
+    @include btn-border-drawing(rgb(114, 110, 110), rgb(114, 110, 110), 4px, bottom, right);
+}
 
 //=== Button styling, semi-ignore
 .btn {

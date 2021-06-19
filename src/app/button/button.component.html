@@ -3,7 +3,8 @@
   [ngClass]="{
     start: purpose === Purpose.Start,
     pause: purpose === Purpose.Pause,
-    reset: purpose === Purpose.Reset
+    reset: purpose === Purpose.Reset,
+    default: purpose === undefined
   }"
 >
   <ng-content></ng-content>
