@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BehaviorSubject, interval, merge, NEVER, Observable, Subject } from 'rxjs';
-import { map, mapTo, pluck, scan, skip, startWith, switchMap, tap } from 'rxjs/operators';
+import { map, mapTo, pluck, scan, shareReplay, skip, startWith, switchMap, tap } from 'rxjs/operators';
 import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
@@ -26,7 +26,7 @@ export class TimerComponent implements OnInit {
 
   timer$: Observable<TimerState>;
   displayTimer$: Observable<OutputTimeValue>;
-  timerState$ = new Subject();
+  timerState$ = new BehaviorSubject(null);
 
   // events
   events$: Observable<any>;
@@ -63,7 +63,7 @@ export class TimerComponent implements OnInit {
             state.value = _state.value;
             this.setTimerState(state);
           })
-        ) : NEVER),
+        ) : NEVER)
     )
 
     this.displayTimer$ = this.timerState$.pipe(
