@@ -1,0 +1,10 @@
+<button
+  class="btn"
+  [ngClass]="{
+    start: purpose === Purpose.Start,
+    pause: purpose === Purpose.Pause,
+    reset: purpose === Purpose.Reset
+  }"
+>
+  <ng-content></ng-content>
+</button>

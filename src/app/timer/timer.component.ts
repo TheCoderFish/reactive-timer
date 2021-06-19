@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BehaviorSubject, interval, merge, NEVER, Observable, Subject } from 'rxjs';
 import { map, mapTo, pluck, scan, shareReplay, skip, startWith, switchMap, tap } from 'rxjs/operators';
+import { Purpose } from '../button/button.component';
 import { Modes, OutputTimeValue, TimerState, TimeValue, TimeValues } from '../models/timer-state';
 
 const SECONDS_IN_A_MINUTE = 60;
@@ -12,6 +13,8 @@ const SECOND_TO_MILLISECONDS = 1000;
   styleUrls: ['./timer.component.scss']
 })
 export class TimerComponent implements OnInit {
+
+  Purpose = Purpose;
 
   // create observable from the button click
   startButtonClicked$ = new Subject();

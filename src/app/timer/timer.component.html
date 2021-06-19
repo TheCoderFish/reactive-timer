@@ -1,7 +1,3 @@
-<button (click)="startButtonClicked$.next()">Start</button>
-<button (click)="pauseButtonClicked$.next()">Pause</button>
-<button (click)="resetButtonClicked$.next()">Reset</button>
-
 <p *ngIf="displayTimer$ | async as timer; else notInitialized">
   {{ timer.minutes }}
   {{ timer.seconds }}
@@ -10,9 +6,20 @@
   <p>00 00</p>
 </ng-template>
 
-<button (click)="setMode(Modes.Pomodoro)">Pomodoro</button>
+<div class="timer-controls">
+  <app-button (click)="startButtonClicked$.next()" [purpose]="Purpose.Start"
+    >Start</app-button
+  >
+  <app-button (click)="pauseButtonClicked$.next()" [purpose]="Purpose.Pause"
+    >Pause</app-button
+  >
+  <app-button (click)="resetButtonClicked$.next()" [purpose]="Purpose.Reset"
+    >Reset</app-button
+  >
+</div>
+<!-- <button (click)="setMode(Modes.Pomodoro)">Pomodoro</button>
 <button (click)="setMode(Modes.ShortBreak)">Short</button>
-<button (click)="setMode(Modes.LongBreak)">Long</button>
+<button (click)="setMode(Modes.LongBreak)">Long</button> -->
 
 <!-- Debugging -->
 <!-- <h1>timer</h1>
