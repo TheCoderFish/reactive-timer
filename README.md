@@ -18,4 +18,6 @@ This app helps to follow the pomodoro technique , more on that on the official s
 
 - Desktop Alerts
 
+# Bug Fixes
+- Timer is slower due to dropping rates , need to implement timer using request animation frame
  
